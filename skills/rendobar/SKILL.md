@@ -34,7 +34,9 @@ const client = createClient({ apiKey: process.env.RENDOBAR_API_KEY });
 
 const job = await client.jobs.create({
   type: "ffprobe",
-  inputs: { source: "https://cdn.rendobar.com/assets/examples/sample.mp4" },
+  // ffprobe is command based: the media URL goes INSIDE params.command,
+  // not in inputs. Other job types differ. Read the per-type schema first.
+  params: { command: "https://cdn.rendobar.com/assets/examples/sample.mp4" },
   idempotencyKey: "probe-sample-1", // dedupes retries
 });
 const done = await client.jobs.wait(job.id);
@@ -80,7 +82,7 @@ the result before reporting success:
 
 ```ts
 const check = await client.jobs.wait(
-  (await client.jobs.create({ type: "ffprobe", inputs: { source: outputUrl } })).id,
+  (await client.jobs.create({ type: "ffprobe", params: { command: outputUrl } })).id,
 );
 // assert what you expected: duration, stream counts, dimensions, non-zero size
 ```
@@ -108,6 +110,7 @@ right.**
 | 2 | Using try/catch shape from other SDKs (`{ data, error }`) | This SDK throws `ApiError`. Catch it and read `err.code`. |
 | 3 | Branching on `err.message` | Branch on `err.code`. Messages are human copy and change freely. |
 | 4 | Inventing a job type or parameter that "should" exist | Read `GET /jobs/types` and the per-type schema. |
+| 4b | Assuming every type takes the media URL in `inputs` | It varies. Command based types (`ffprobe`, `ffmpeg`) carry it inside `params.command`. Submitting the wrong shape returns `VALIDATION_ERROR` naming the missing field, so read the schema first. |
 | 5 | Adding a `/v1` prefix to the API base | The base is `https://api.rendobar.com`, no version prefix. |
 | 6 | Looking for a batch endpoint | There is none. One job produces one output. Submit N jobs for N files. |
 | 7 | Passing a local file path as an input | Inputs are URLs. Upload through the assets flow first. |

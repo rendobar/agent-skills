@@ -27,8 +27,7 @@ const client = createClient({ apiKey: process.env.RENDOBAR_API_KEY });
 
 const job = await client.jobs.create({
   type: "ffprobe",
-  inputs: { source: "https://cdn.rendobar.com/assets/examples/sample.mp4" },
-  params: {},
+  params: { command: "https://cdn.rendobar.com/assets/examples/sample.mp4" },
   idempotencyKey: "order-1234-probe", // dedupes retries
 });
 ```
@@ -39,8 +38,23 @@ REST:
 curl -X POST https://api.rendobar.com/jobs \
   -H "Authorization: Bearer $RENDOBAR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"type":"ffprobe","inputs":{"source":"https://cdn.rendobar.com/assets/examples/sample.mp4"}}'
+  -d '{"type":"ffprobe","params":{"command":"https://cdn.rendobar.com/assets/examples/sample.mp4"}}'
 ```
+
+## Where the media URL goes
+
+This is the single easiest thing to get wrong, because it is not the same for
+every type. Read `GET /jobs/types/{type}/schema` before building the body.
+
+| Type | Media URL goes in |
+|---|---|
+| `ffprobe` | `params.command`, which is a raw ffprobe command whose minimal form is just the URL |
+| `ffmpeg` | `params.command`, with `inputs` mapping the filenames used inside that command |
+| Everything else | `inputs`, with options in `params` |
+
+Sending the wrong shape is safe but wasted: the API rejects it with
+`VALIDATION_ERROR` and a `details` array naming the exact missing path, for
+example `path: ["command"]`. Read that path and fix the body.
 
 Rules:
 
