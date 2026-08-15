@@ -11,23 +11,66 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Skill frontmatter has name and description
+      - name: Skill validates against the Agent Skills spec
         run: |
           set -euo pipefail
+          for d in skills/*/; do
+            npx -y skills-ref validate "./${d%/}"
+          done
+
+      # The spec allows exactly six frontmatter keys. Claude Code tolerates more,
+      # but claude.ai upload, the Skills API, and package_skill.py HARD ERROR on
+      # any extra key, so a skill that works locally can be unpublishable. A
+      # well-known vendor skill ships `inputs:` and `references:` and has exactly
+      # this defect. Put anything custom under `metadata:`, which is a spec-legal
+      # arbitrary string map.
+      - name: Frontmatter uses only spec-legal keys
+        run: |
+          set -euo pipefail
+          allowed='name|description|license|compatibility|metadata|allowed-tools'
           fail=0
           for f in skills/*/SKILL.md; do
-            fm=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$f")
-            if ! printf '%s\n' "$fm" | grep -q '^name:'; then
-              echo "::error file=$f::frontmatter missing name"
-              fail=1
-            fi
-            if ! printf '%s\n' "$fm" | grep -q '^description:'; then
-              echo "::error file=$f::frontmatter missing description"
+            keys=$(awk '/^---$/{n++; next} n==1 && /^[a-zA-Z-]+:/{sub(/:.*/,""); print} n>=2{exit}' "$f")
+            for k in $keys; do
+              if ! printf '%s' "$k" | grep -qE "^($allowed)$"; then
+                echo "::error file=$f::frontmatter key '$k' is not spec-legal. Allowed: $allowed. Nest custom data under metadata:"
+                fail=1
+              fi
+            done
+            # name must equal the parent directory name (spec requirement)
+            dir=$(basename "$(dirname "$f")")
+            name=$(awk '/^name:/{print $2; exit}' "$f")
+            if [ "$dir" != "$name" ]; then
+              echo "::error file=$f::name '$name' must match directory '$dir'"
               fail=1
             fi
             echo "checked $f"
           done
           exit $fail
+
+      # References must stay one level deep. Deep chains are the documented
+      # anti-pattern: the agent burns context walking them.
+      - name: References are one level deep
+        run: |
+          set -euo pipefail
+          if find skills/*/references -mindepth 2 -type f 2>/dev/null | grep .; then
+            echo "::error::reference files must sit directly in references/, not in subdirectories"
+            exit 1
+          fi
+          echo "references are flat"
+
+      - name: Evals exist
+        run: |
+          set -euo pipefail
+          for d in skills/*/; do
+            name=$(basename "${d%/}")
+            if [ ! -f "skill-evals/$name/evals.json" ]; then
+              echo "::error::skill '$name' has no skill-evals/$name/evals.json"
+              exit 1
+            fi
+            node -e "JSON.parse(require('fs').readFileSync('skill-evals/$name/evals.json','utf8'))"
+            echo "evals ok for $name"
+          done
 
       - name: Cited URLs return 200
         run: |

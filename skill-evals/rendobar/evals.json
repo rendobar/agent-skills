@@ -1,0 +1,57 @@
+{
+  "$comment": "Scenarios this skill must pass. Shape follows Anthropic's published eval format (skills, query, expected_behavior). Run each in a fresh session against an empty project, once per model tier, and score every expected_behavior line pass or fail. A failure is a skill edit, not a retry.",
+  "evals": [
+    {
+      "skills": ["rendobar"],
+      "query": "Add Rendobar to this project so I can compress user uploads to about 5 MB.",
+      "expected_behavior": [
+        "Reads the live job catalog from GET https://api.rendobar.com/jobs/types instead of naming job types from memory",
+        "Reads the per-type schema for the compression job before constructing params",
+        "Installs @rendobar/sdk for a JavaScript or TypeScript project, or uses plain REST for any other stack",
+        "Asks for RENDOBAR_API_KEY to be placed in a gitignored env file and never requests the key in the chat",
+        "Catches ApiError and branches on err.code rather than on the error message text",
+        "Does not invent a batch endpoint or add a /v1 prefix to the API base"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "My Rendobar job came back complete but the video looks wrong. What now?",
+      "expected_behavior": [
+        "States that a complete status proves the job ran, not that the output is correct",
+        "Probes the output with an ffprobe job rather than trusting the status",
+        "Checks concrete properties such as duration, stream counts, dimensions, and non-zero size",
+        "Suggests extracting and viewing a frame for a visual result instead of assuming"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "My call failed with WaitTimeoutError. Resubmit it?",
+      "expected_behavior": [
+        "Says no, a timeout is not a failure and the job may still be queued",
+        "Calls jobs.get(id) to read the real status before any resubmission",
+        "Warns that resubmitting without an idempotencyKey double bills",
+        "Recommends passing an idempotencyKey on any submit that can be retried"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "Give me a quick smoke test that Rendobar is wired up correctly.",
+      "expected_behavior": [
+        "Chooses ffprobe as the cheapest proof of auth and wiring",
+        "Uses the public sample asset at https://cdn.rendobar.com/assets/examples/sample.mp4",
+        "Does not propose a long or high resolution source for a smoke test",
+        "Optionally runs scripts/preflight.mjs, and does not read that script's source into context"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "I got a 401 from Rendobar and my env file definitely has the key in it.",
+      "expected_behavior": [
+        "Names both causes: the key may not be reaching the process, or the key itself may be invalid for this API",
+        "Mentions a wrong-environment key, such as a staging key used against production, as a specific case",
+        "Verifies which cause applies rather than guessing, for example by calling the API directly with the same key",
+        "Never prints or echoes the key value while debugging"
+      ]
+    }
+  ]
+}
