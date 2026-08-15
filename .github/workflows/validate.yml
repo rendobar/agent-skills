@@ -35,10 +35,28 @@ jobs:
           # Skipped URLs:
           #  - api.rendobar.com/mcp answers 401 to an unauthenticated GET by design
           #  - api.rendobar.com/jobs and /assets are authenticated POST endpoints
-          #  - prompts/integrate.md ships with the AI prompt distribution rollout,
-          #    remove from this list once the page is live
           #  - anything ending in / is a {placeholder} template fragment
-          skip='^https://(api\.rendobar\.com/(mcp|jobs|assets)|rendobar\.com/prompts/integrate\.md)$'
+          skip='^https://api\.rendobar\.com/(mcp|jobs|assets)
+          urls=$(grep -rhoE 'https://[A-Za-z0-9./_%-]+' --include='*.md' README.md skills/ \
+            | sed 's/[.,)]*$//' | sort -u)
+          fail=0
+          for u in $urls; do
+            case "$u" in */) echo "skip     $u"; continue ;; esac
+            if printf '%s' "$u" | grep -qE "$skip"; then
+              echo "skip     $u"
+              continue
+            fi
+            code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 30 --retry 2 \
+              -A 'rendobar-agent-skills-ci' "$u")
+            if [ "${code:0:1}" = "2" ]; then
+              echo "ok  $code $u"
+            else
+              echo "::error::$code $u"
+              fail=1
+            fi
+          done
+          exit $fail
+
           urls=$(grep -rhoE 'https://[A-Za-z0-9./_%-]+' --include='*.md' README.md skills/ \
             | sed 's/[.,)]*$//' | sort -u)
           fail=0
