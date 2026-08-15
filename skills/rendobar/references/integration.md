@@ -37,8 +37,12 @@ fetched live so they cannot drift.
 2. Read the live job catalog (`GET https://api.rendobar.com/jobs/types`) and
    pick the job types the project needs from what it actually lists. Do not
    invent job types or parameters.
-3. Submit with `client.jobs.create({ type, inputs, params })`. Media inputs
-   are URLs. Pass an `idempotencyKey` anywhere a retry could double-submit.
+3. Submit with `client.jobs.create({ type, inputs, params })`. Media is always
+   referenced by URL, but WHERE the URL goes differs by type: command based
+   types (`ffprobe`, `ffmpeg`) carry it inside `params.command`, everything
+   else takes it in `inputs`. The per-type schema is authoritative, see
+   [jobs.md](jobs.md). Pass an `idempotencyKey` anywhere a retry could
+   double-submit.
 4. Results: `client.jobs.wait(job.id)` is fine for scripts. For a production
    server, use webhooks. Ask the user to add an endpoint at
    https://app.rendobar.com/webhooks, then verify signatures with
@@ -53,8 +57,10 @@ fetched live so they cannot drift.
    the returned asset url as the job input.
 7. Definition of done: a runnable check that submits an `ffprobe` job on
    `https://cdn.rendobar.com/assets/examples/sample.mp4` and prints the
-   result. Show the user the one command that runs it. A 401 means the key is
-   not reaching the process env.
+   result. Show the user the one command that runs it. On a 401, check both
+   causes before reporting: the key may not be reaching the process env, or the
+   key itself may be invalid for this API (revoked, mistyped, or issued for
+   another environment such as staging). Say which one it is.
 
 ## Hard rules
 

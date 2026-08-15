@@ -130,15 +130,24 @@ right.**
 
 ## Errors, at a glance
 
+Two different shapes. A failed **request** throws `ApiError` with `.code`:
+
 | Code | Do |
 |---|---|
 | `INSUFFICIENT_CREDITS` | Stop. Tell the user to top up at https://app.rendobar.com/billing |
 | `RATE_LIMITED` | Back off exponentially and retry |
-| `VALIDATION_ERROR` | Fix the parameters against the per-type schema. Do not retry unchanged |
+| `VALIDATION_ERROR` | Read `details[].path`, fix that field against the per-type schema. Do not retry unchanged |
 | `NOT_FOUND` | The id is wrong or belongs to another org |
-| `UNAUTHORIZED` | Key missing, invalid, or wrong environment |
+| `UNAUTHORIZED` | Key missing, invalid, or issued for another environment |
 
-Full table with every code in [references/errors.md](references/errors.md).
+A failed **job** is different: the request succeeded, so `GET /jobs/{id}`
+returns 200 with `status: "failed"` and a structured `error` object carrying
+`code`, `message`, `detail`, `failedPhase`, and **`retryable`**. Let
+`error.retryable` decide whether to retry, rather than inventing a policy, and
+read `error.detail` for the real provider stderr. `jobs.wait()` throws
+`JobFailedError` in this case.
+
+Full table and both shapes in [references/errors.md](references/errors.md).
 
 ## Dependencies
 

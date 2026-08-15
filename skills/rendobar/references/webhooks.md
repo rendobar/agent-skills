@@ -36,9 +36,11 @@ if (!ok) return res.status(401).send("Invalid signature");
 ```
 
 `@rendobar/sdk/webhooks` has zero runtime dependencies and works in Node 18+,
-Deno, Cloudflare Workers, and the browser. Non-JavaScript stacks rebuild the
-same check: HMAC SHA-256 of `${timestamp}.${rawBody}` with the secret,
-constant-time compare against the header value after the `sha256=` prefix.
+Deno, Bun, and Cloudflare Workers. Verification is server side only: it needs
+the signing secret, which must never reach a browser bundle. Non-JavaScript
+stacks rebuild the same check: HMAC SHA-256 of `${timestamp}.${rawBody}` with
+the secret, constant-time compare against the header value after the `sha256=`
+prefix.
 
 Common failure: verifying against the parsed-then-re-stringified body. Byte
 order changes and the signature no longer matches. Always keep the raw bytes.
