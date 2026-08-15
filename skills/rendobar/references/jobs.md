@@ -90,6 +90,22 @@ console.log(done.status, done.output);
 `client.jobs.get(job.id)` is a single status read. On REST, poll
 `GET https://api.rendobar.com/jobs/{id}`.
 
+## Reading the output
+
+A completed job carries `output` with four fields:
+
+| Field | Holds |
+|---|---|
+| `data` | The result when the job returns data rather than a file (`ffprobe`) |
+| `file` | The single output file, when the job produces one |
+| `files` | Every output file, for jobs that emit more than a reference to one |
+| `expiresAt` | When the signed URL in `file` stops working, about an hour |
+
+`output.expiresAt` is the URL's life, not the file's. The file itself is
+deleted at `retentionExpiresAt` on the job, which is plan driven (7 days on
+free, 30 on pro). Re-fetch the job for a fresh URL rather than caching one, and
+copy anything that must outlive retention into your own storage.
+
 ## Response envelope
 
 Single resources come back as `{ data: ... }`, lists as

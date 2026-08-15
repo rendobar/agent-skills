@@ -97,9 +97,11 @@ right.**
   `https://cdn.rendobar.com/assets/examples/sample.mp4` (about 5 seconds, 344 KB).
 - `ffprobe` is the cheapest way to prove auth, wiring, and output handling. Run
   it first, always.
-- Never smoke test with a long or high resolution source. Compute is billed by
-  the second with a per job floor, so a 2 hour 4K render costs real money and
-  proves nothing that the sample does not.
+- Never smoke test with a long or high resolution source. Billing tracks the
+  compute a job actually uses, so a 2 hour 4K render costs real money and
+  proves nothing the 5 second sample does not. Current rates are on the
+  [pricing page](https://rendobar.com/pricing/), and the charge for a specific
+  job appears on the job once billing settles, shortly after it completes.
 - Check the balance before a large batch: `client.billing.state()`.
 
 ## Common mistakes
@@ -114,11 +116,29 @@ right.**
 | 5 | Adding a `/v1` prefix to the API base | The base is `https://api.rendobar.com`, no version prefix. |
 | 6 | Looking for a batch endpoint | There is none. One job produces one output. Submit N jobs for N files. |
 | 7 | Passing a local file path as an input | Inputs are URLs. Upload through the assets flow first. |
-| 8 | Storing the output URL long term | Output URLs are short lived and regenerated per read. Fetch fresh, or copy the asset. |
-| 9 | Assuming outputs live forever | Retention is plan driven (7 days on free, 30 on pro). Copy anything you need to keep. |
+| 8 | Storing the output URL, or caching it | The URL is signed and regenerated on every read. Re-fetch the job to get a fresh one. |
+| 9 | Reading `output.expiresAt` as "the file is deleted then" | It is not. See the two clocks below. |
 | 10 | Retrying a submit without an `idempotencyKey` | Pass one anywhere a retry is possible. It dedupes instead of double billing. |
 | 11 | Calling the API from browser code | Server side only. The key must never reach a client bundle. |
 | 12 | Reporting success on a `complete` status alone | Probe the output first. See the verification section. |
+
+## Two clocks on every output
+
+A completed job carries two different expiries and confusing them causes real
+bugs in both directions.
+
+| Field | Means | Typical |
+|---|---|---|
+| `output.expiresAt` | When this signed download URL stops working | 1 hour |
+| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro |
+
+So a URL going stale does not mean the output is gone: re-fetch the job for a
+fresh URL. And a file still being in retention does not mean an old URL works.
+Jobs that return data rather than a file (`ffprobe` is one) put the result in
+`output.data`, with `output.file` and `output.expiresAt` both null and nothing
+to expire.
+
+Copy anything that must outlive the retention window into your own storage.
 
 ## API key security
 
