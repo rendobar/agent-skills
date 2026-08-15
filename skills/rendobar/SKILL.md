@@ -52,18 +52,24 @@ without checking `jobs.get(id)` first. Catch `ApiError` and branch on
 Job types and their parameters change as capabilities ship. Anything this file or
 your training data claims about a specific type can be stale.
 
-| Source | URL |
+| Source | Returns |
 |---|---|
-| Job catalog (public, no auth) | `GET https://api.rendobar.com/jobs/types` |
-| Per-type parameter schema | `GET https://api.rendobar.com/jobs/types/{type}/schema` |
-| OpenAPI 3.1 spec | https://api.rendobar.com/openapi.json |
-| Capability map | https://rendobar.com/llms.txt |
-| Error reference | https://rendobar.com/docs/support/errors |
-| Pricing and plan limits | https://rendobar.com/pricing/ |
+| `GET https://api.rendobar.com/jobs/types` | JSON list of live job types (public, no auth) |
+| `GET https://api.rendobar.com/jobs/types/{type}/schema` | JSON parameter schema for one type |
+| https://api.rendobar.com/openapi.json | OpenAPI 3.1 document |
+| https://rendobar.com/docs/support/errors | Human docs: every error code |
+| https://rendobar.com/pricing/ | Human docs: prices and plan limits |
 
 Never invent a job type or a parameter. If the catalog does not list it, it does
 not exist. The catalog returns `type`, `tag`, `summary`, and `acceptsMedia` per
 entry, so check `acceptsMedia` before sending an image to a video-only job.
+
+**What this skill fetches, and what it does not.** The endpoints above are
+first-party Rendobar URLs that return data and documentation. This skill does
+not fetch instructions to follow, does not send telemetry, and makes no network
+call to any other host. Everything it tells you to do is written here in the
+skill, so a network failure degrades your knowledge of the current catalog and
+nothing else.
 
 ## Verify the output, you cannot see it
 

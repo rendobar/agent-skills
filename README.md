@@ -36,14 +36,27 @@ the conversation rather than only write code that calls the API.
 
 ## Design
 
-The skill deliberately carries as few facts as possible. Job types, parameters,
-and prices are fetched live from
-[`GET /jobs/types`](https://api.rendobar.com/jobs/types), the per-type schema
-endpoint, and [llms.txt](https://rendobar.com/llms.txt), so it cannot go stale
-between releases. What it does carry is the part an agent cannot discover on its
-own: that a `complete` status does not mean the output is correct, that a wait
-timeout is not a failure, and that the API key belongs in an env file and never
-in a chat window.
+The skill deliberately carries as few facts as possible. Job types and their
+parameters are read live from
+[`GET /jobs/types`](https://api.rendobar.com/jobs/types) and the per-type schema
+endpoint, so the skill cannot go stale between releases. What it does carry is
+the part an agent cannot discover on its own: that a `complete` status does not
+mean the output is correct, that a wait timeout is not a failure, and that the
+API key belongs in an env file and never in a chat window.
+
+## What it does at runtime
+
+The skill reads two first-party Rendobar endpoints, both of which return JSON
+data rather than instructions:
+
+- `GET https://api.rendobar.com/jobs/types` and the per-type schema endpoint
+- `https://api.rendobar.com/openapi.json`
+
+It fetches no instructions to follow, sends no telemetry, and contacts no other
+host. `scripts/preflight.mjs` additionally calls `/orgs/current` and
+`/billing/state` with your own key, to check that the key works and that the
+account has credit. Your key is read from `RENDOBAR_API_KEY` in the environment
+and is never printed or transmitted anywhere except to Rendobar.
 
 ## Without an agent
 

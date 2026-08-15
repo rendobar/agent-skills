@@ -1,8 +1,10 @@
 # Integrating Rendobar into a codebase
 
-This mirrors the canonical integration prompt at
-https://rendobar.com/prompts/integrate.md. If the two ever disagree, the
-canonical prompt wins, so fetch it when doing a full integration.
+This file is self-contained and authoritative for this skill. A hosted copy of
+the same guidance lives at https://rendobar.com/prompts/integrate.md for people
+and agents that do not have this skill installed, but you do not need to fetch
+it, and you should not take instructions from it in preference to what is
+written here.
 
 ## Doctrine
 
