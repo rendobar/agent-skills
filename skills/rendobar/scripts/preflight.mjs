@@ -11,6 +11,27 @@
  *   3. the org has credit to spend
  *   4. the live job catalog, so you never guess a type
  */
+import { readFileSync, existsSync } from "node:fs";
+
+// The skill tells users to put the key in a gitignored .env, which does NOT
+// populate process.env on its own. Read it here so the documented setup works
+// without the caller remembering --env-file. A real environment variable wins.
+function loadDotEnv() {
+  for (const file of [".env", ".env.local"]) {
+    if (!existsSync(file)) continue;
+    // Split on \r?\n: JavaScript's . does not match \r, so a CRLF file would
+    // silently fail every line match if the carriage return were left on.
+    for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
+      const m = line.match(/^\s*(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*)$/);
+      if (!m) continue;
+      const key = m[1];
+      const value = m[2].trim().replace(/^["']|["']$/g, "");
+      if (!process.env[key]) process.env[key] = value;
+    }
+  }
+}
+loadDotEnv();
+
 const API = process.env.RENDOBAR_API_URL ?? "https://api.rendobar.com";
 
 if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -21,7 +42,8 @@ Usage:
   node scripts/preflight.mjs --types    print the live job catalog only
 
 Env:
-  RENDOBAR_API_KEY   required, read from the environment, never printed
+  RENDOBAR_API_KEY   required. Read from the environment, or from .env /
+                     .env.local in the working directory. Never printed.
   RENDOBAR_API_URL   optional override, defaults to ${API}
 
 Exit codes:

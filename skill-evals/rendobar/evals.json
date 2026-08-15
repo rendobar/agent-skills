@@ -45,6 +45,27 @@
     },
     {
       "skills": ["rendobar"],
+      "query": "The Rendobar output URL I saved yesterday stopped working. Is my file gone?",
+      "expected_behavior": [
+        "Says the file is probably fine and distinguishes the two expiries rather than conflating them",
+        "Explains that output.expiresAt is the signed URL's life, about an hour, not the file's",
+        "Points at retentionExpiresAt on the job as the actual deletion time, and notes it is plan driven",
+        "Tells the user to re-fetch the job for a fresh URL rather than caching one",
+        "Recommends copying anything that must outlive the retention window into their own storage"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "A Rendobar job came back failed. Should I retry it?",
+      "expected_behavior": [
+        "Reads error.retryable on the job instead of inventing a retry policy",
+        "Treats the job error as a structured object with code, message, detail, and failedPhase, not as a string",
+        "Checks error.detail for the underlying provider output when present",
+        "Notes that a failed job is a 200 response with status failed, not a request error, and that jobs.wait throws JobFailedError for it"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
       "query": "I got a 401 from Rendobar and my env file definitely has the key in it.",
       "expected_behavior": [
         "Names both causes: the key may not be reaching the process, or the key itself may be invalid for this API",

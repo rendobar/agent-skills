@@ -42,12 +42,21 @@ const job = await client.jobs.create({
 const done = await client.jobs.wait(job.id);
 ```
 
-**Key gotcha: the SDK throws, it does not return an error object.** `jobs.wait()`
-raises `JobFailedError` when the job ends failed and `WaitTimeoutError` when it
-runs past the timeout. A `WaitTimeoutError` does **not** mean the job failed. The
-job may still be queued and may still complete, so never resubmit on a timeout
-without checking `jobs.get(id)` first. Catch `ApiError` and branch on
-`err.code`, never on the message text.
+**Key gotcha: `wait()` does NOT throw when the job fails.** `throwOnFailure`
+defaults to `false`, so a failed job comes back as a normal return value with
+`status: "failed"` and a null output. Code that assumes success will happily
+pass that null downstream. Always do one of these:
+
+```ts
+const done = await client.jobs.wait(job.id);
+if (done.status !== "complete") throw new Error(`job ${done.status}: ${done.error?.message}`);
+// or: await client.jobs.wait(job.id, { throwOnFailure: true })
+```
+
+Request failures are the opposite: those **throw** `ApiError`, so catch it and
+branch on `err.code`, never on message text. A `WaitTimeoutError` throws too and
+does **not** mean the job failed. The job may still be queued and may still
+complete, so check `jobs.get(id)` before resubmitting.
 
 ## Work from the live catalog, never from memory
 
@@ -97,6 +106,14 @@ right.**
   `https://cdn.rendobar.com/assets/examples/sample.mp4` (about 5 seconds, 344 KB).
 - `ffprobe` is the cheapest way to prove auth, wiring, and output handling. Run
   it first, always.
+- **Proving a threshold needs a source above it.** The sample is 344 KB, so
+  "compress to 5 MB" passes on it without doing anything, and a check built that
+  way is vacuous. Test with a source that genuinely violates the bound, keeping
+  it short (ten seconds of 1080p is plenty), and assert the input really was over
+  the cap as one of your checks.
+- `dryRun` on `compress.target` reads like a free estimate. It is not: it runs
+  real probe encodes and bills close to the full job. Do not sprinkle it in to
+  "check cost first".
 - Never smoke test with a long or high resolution source. Billing tracks the
   compute a job actually uses, so a 2 hour 4K render costs real money and
   proves nothing the 5 second sample does not. Current rates are on the
@@ -108,14 +125,17 @@ right.**
 
 | # | Mistake | Fix |
 |---|---|---|
-| 1 | Treating `WaitTimeoutError` as a failure and resubmitting | Call `jobs.get(id)`. The job is probably still queued. Resubmitting double bills. |
-| 2 | Using try/catch shape from other SDKs (`{ data, error }`) | This SDK throws `ApiError`. Catch it and read `err.code`. |
+| 1 | Assuming `wait()` throws on a failed job | It does not by default. Check `status !== "complete"`, or pass `throwOnFailure: true`. |
+| 2 | Treating `WaitTimeoutError` as a failure and resubmitting | Call `jobs.get(id)`. The job is probably still queued. Resubmitting double bills. |
+| 3 | Using try/catch shape from other SDKs (`{ data, error }`) | Request errors throw `ApiError`. Catch it and read `err.code`. |
+| 3b | Building a state machine on four statuses | There are six: `waiting`, `dispatched`, `running`, `complete`, `failed`, `cancelled`. Jobs sit in `dispatched` for a while. Terminal means `complete`, `failed`, or `cancelled`. |
 | 3 | Branching on `err.message` | Branch on `err.code`. Messages are human copy and change freely. |
 | 4 | Inventing a job type or parameter that "should" exist | Read `GET /jobs/types` and the per-type schema. |
 | 4b | Assuming every type takes the media URL in `inputs` | It varies. Command based types (`ffprobe`, `ffmpeg`) carry it inside `params.command`. Submitting the wrong shape returns `VALIDATION_ERROR` naming the missing field, so read the schema first. |
 | 5 | Adding a `/v1` prefix to the API base | The base is `https://api.rendobar.com`, no version prefix. |
 | 6 | Looking for a batch endpoint | There is none. One job produces one output. Submit N jobs for N files. |
-| 7 | Passing a local file path as an input | Inputs are URLs. Upload through the assets flow first. |
+| 7 | Passing a local file path as an input | Inputs are URLs. Upload the file first with `client.uploads.create(...)`, then pass the returned asset url. Uploads are ephemeral (24h) unless you persist them. |
+| 7b | Guessing the `inputs` key, or expecting the schema to name it | The schema endpoint returns `params` only, it is silent on inputs. `inputs.source` is the usual key. If unsure, POST the body without inputs and read `error.details[].path`, which names the exact field. |
 | 8 | Storing the output URL, or caching it | The URL is signed and regenerated on every read. Re-fetch the job to get a fresh one. |
 | 9 | Reading `output.expiresAt` as "the file is deleted then" | It is not. See the two clocks below. |
 | 10 | Retrying a submit without an `idempotencyKey` | Pass one anywhere a retry is possible. It dedupes instead of double billing. |
