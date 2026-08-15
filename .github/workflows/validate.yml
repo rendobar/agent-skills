@@ -1,0 +1,60 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skill frontmatter has name and description
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in skills/*/SKILL.md; do
+            fm=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$f")
+            if ! printf '%s\n' "$fm" | grep -q '^name:'; then
+              echo "::error file=$f::frontmatter missing name"
+              fail=1
+            fi
+            if ! printf '%s\n' "$fm" | grep -q '^description:'; then
+              echo "::error file=$f::frontmatter missing description"
+              fail=1
+            fi
+            echo "checked $f"
+          done
+          exit $fail
+
+      - name: Cited URLs return 200
+        run: |
+          set -uo pipefail
+          # Skipped URLs:
+          #  - api.rendobar.com/mcp answers 401 to an unauthenticated GET by design
+          #  - api.rendobar.com/jobs and /assets are authenticated POST endpoints
+          #  - prompts/integrate.md ships with the AI prompt distribution rollout,
+          #    remove from this list once the page is live
+          #  - anything ending in / is a {placeholder} template fragment
+          skip='^https://(api\.rendobar\.com/(mcp|jobs|assets)|rendobar\.com/prompts/integrate\.md)$'
+          urls=$(grep -rhoE 'https://[A-Za-z0-9./_%-]+' --include='*.md' README.md skills/ \
+            | sed 's/[.,)]*$//' | sort -u)
+          fail=0
+          for u in $urls; do
+            case "$u" in */) echo "skip     $u"; continue ;; esac
+            if printf '%s' "$u" | grep -qE "$skip"; then
+              echo "skip     $u"
+              continue
+            fi
+            code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 30 --retry 2 \
+              -A 'rendobar-agent-skills-ci' "$u")
+            if [ "${code:0:1}" = "2" ]; then
+              echo "ok  $code $u"
+            else
+              echo "::error::$code $u"
+              fail=1
+            fi
+          done
+          exit $fail

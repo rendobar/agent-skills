@@ -1,0 +1,29 @@
+{
+  "name": "rendobar-skills",
+  "metadata": {
+    "description": "Rendobar agent skills for Claude Code"
+  },
+  "owner": {
+    "name": "Rendobar",
+    "url": "https://rendobar.com"
+  },
+  "plugins": [
+    {
+      "name": "rendobar",
+      "description": "Integrate Rendobar's media processing and AI generation API: FFmpeg jobs, target size compression, captions, image generation, webhooks, and MCP",
+      "source": "./",
+      "category": "developer-tools",
+      "homepage": "https://rendobar.com",
+      "tags": [
+        "media-processing",
+        "ffmpeg",
+        "video",
+        "image-generation",
+        "captions",
+        "transcode",
+        "api",
+        "mcp"
+      ]
+    }
+  ]
+}

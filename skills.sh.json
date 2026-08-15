@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "Core",
+      "description": "The core skill for integrating Rendobar's media processing and AI generation API.",
+      "skills": ["rendobar"]
+    }
+  ]
+}
