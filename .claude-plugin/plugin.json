@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "rendobar",
   "description": "Process and generate media over one API: FFmpeg jobs, target size compression, captions, composition, and image generation, editing, and upscaling",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "Rendobar",
     "url": "https://rendobar.com"

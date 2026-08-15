@@ -58,13 +58,12 @@ host. `scripts/preflight.mjs` additionally calls `/orgs/current` and
 account has credit. Your key is read from `RENDOBAR_API_KEY` in the environment
 and is never printed or transmitted anywhere except to Rendobar.
 
-## Without an agent
+## Not using skills?
 
-The same guidance as a prompt you can paste into any assistant:
-
-```
-Add Rendobar to my app: read and follow https://rendobar.com/prompts/integrate.md
-```
+The same guidance is published as a prompt you can paste into any assistant.
+See [Build with AI](https://rendobar.com/docs/build-with-ai) for it. That is a
+separate distribution channel for people without a skills-capable agent. This
+skill does not fetch or defer to it.
 
 ## Links
 
