@@ -118,12 +118,19 @@ right.**
   costs real money and proves nothing the 5 second sample does not. How a job
   bills depends on its type:
   - Most types bill the compute the job actually uses.
-  - `compose` bills per second of the video it returns, with a 20 second
-    minimum per render. Animated graphics (kinetic text, 3D cards, HTML or
-    Lottie motion) bill at 3x, and frames larger than 1080p (1440p, 4K) bill
-    at 2x. The two stack, so animated 4K bills at 6x. A low resolution draft costs the same per second as a 1080p final, so
-    keep test renders short rather than small. The `validate_compose` MCP tool
-    quotes the price before you render.
+  - `compose` bills $0.04 per minute of the video it returns, counted by the
+    second, with a 15 second minimum per render. The rate is the same on every
+    plan, at every frame size and with animated graphics, so a low resolution
+    draft costs the same per second as a 1080p final. Keep test renders short
+    rather than small.
+  - What a plan can render differs. Pay-as-you-go renders compose up to 1080p
+    at 30 fps. Pro adds 4K and 60 fps. Animated graphics (kinetic text, 3D
+    cards, HTML or Lottie motion) above 1080p or 30 fps need an enterprise
+    plan. A video above the plan fails at submit with `PLAN_LIMIT`, and the
+    message names the plan that renders it. Tell the user, do not retry.
+  - The `validate_compose` MCP tool (or `POST /compose/validate`) runs the
+    same plan check for free and quotes the price as
+    `{ perMinuteUsd, minSeconds }` before you render.
 
   Current rates are on the [pricing page](https://rendobar.com/pricing/), and
   the charge for a specific job appears on the job once billing settles,

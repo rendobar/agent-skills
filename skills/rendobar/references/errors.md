@@ -69,7 +69,7 @@ must handle.
 | `UNAUTHORIZED` | 401 | Two distinct causes, check both before reporting: the key may not be reaching the process env, or the key itself may be invalid for this API (revoked, mistyped, or issued for another environment such as staging). Confirm which one rather than guessing. |
 | `INSUFFICIENT_CREDITS` | 402 | The org balance cannot cover the job. Tell the user to top up at https://app.rendobar.com/billing. Do not retry until they do. |
 | `FORBIDDEN` | 403 | The key's org cannot access this resource. |
-| `PLAN_LIMIT` | 403 | A plan limit was hit (file size, concurrency, and similar). Surface it to the user, do not silently retry. |
+| `PLAN_LIMIT` | 403 | A plan limit was hit (file size, job timeout, GPU FFmpeg on the free plan, a compose frame or frame rate above the plan, and similar). Surface it to the user, do not silently retry. |
 | `NOT_FOUND` | 404 | The resource does not exist or belongs to another org. Check the id. |
 | `CONFLICT` | 409 | State conflict, for example cancelling a job that already finished. |
 | `RATE_LIMITED` | 429 | Too many requests. Retry with exponential backoff and jitter. |
