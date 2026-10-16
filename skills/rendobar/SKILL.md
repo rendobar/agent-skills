@@ -120,8 +120,8 @@ right.**
   - Most types bill the compute the job actually uses.
   - `compose` bills per second of the video it returns, with a 20 second
     minimum per render. Animated graphics (kinetic text, 3D cards, HTML or
-    Lottie motion) bill at 3x, and frames above 1080p count as several 1080p
-    frames. A low resolution draft costs the same per second as a 1080p final, so
+    Lottie motion) bill at 3x, and frames larger than 1080p (1440p, 4K) bill
+    at 2x. The two stack, so animated 4K bills at 6x. A low resolution draft costs the same per second as a 1080p final, so
     keep test renders short rather than small. The `validate_compose` MCP tool
     quotes the price before you render.
 
