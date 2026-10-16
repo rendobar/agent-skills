@@ -114,11 +114,20 @@ right.**
 - `dryRun` on `compress.target` reads like a free estimate. It is not: it runs
   real probe encodes and bills close to the full job. Do not sprinkle it in to
   "check cost first".
-- Never smoke test with a long or high resolution source. Billing tracks the
-  compute a job actually uses, so a 2 hour 4K render costs real money and
-  proves nothing the 5 second sample does not. Current rates are on the
-  [pricing page](https://rendobar.com/pricing/), and the charge for a specific
-  job appears on the job once billing settles, shortly after it completes.
+- Never smoke test with a long or high resolution source. A 2 hour 4K render
+  costs real money and proves nothing the 5 second sample does not. How a job
+  bills depends on its type:
+  - Most types bill the compute the job actually uses.
+  - `compose` bills per second of the video it returns, with a 20 second
+    minimum per render. Animated graphics (kinetic text, 3D cards, HTML or
+    Lottie motion) bill at 3x, and frames above 1080p count as several 1080p
+    frames. A low resolution draft costs the same per second as a 1080p final, so
+    keep test renders short rather than small. The `validate_compose` MCP tool
+    quotes the price before you render.
+
+  Current rates are on the [pricing page](https://rendobar.com/pricing/), and
+  the charge for a specific job appears on the job once billing settles,
+  shortly after it completes.
 - Check the balance before a large batch: `client.billing.state()`.
 
 ## Common mistakes
