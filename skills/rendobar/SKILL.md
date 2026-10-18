@@ -124,9 +124,9 @@ right.**
     draft costs the same per second as a 1080p final. Keep test renders short
     rather than small.
   - What a plan can render differs. Pay-as-you-go renders compose up to 1080p
-    at 30 fps. Pro adds 4K and 60 fps. Animated graphics (kinetic text, 3D
-    cards, HTML or Lottie motion) above 1080p or 30 fps need an enterprise
-    plan. A video above the plan fails at submit with `PLAN_LIMIT`, and the
+    at 30 fps. Pro adds 1440p, and Studio adds 4K and 60 fps. Animated
+    graphics (kinetic text, 3D cards, HTML or Lottie motion) above 1080p or
+    30 fps need an enterprise plan. A video above the plan fails at submit with `PLAN_LIMIT`, and the
     message names the plan that renders it. Tell the user, do not retry.
   - The `validate_compose` MCP tool (or `POST /compose/validate`) runs the
     same plan check for free and quotes the price as
@@ -166,7 +166,7 @@ bugs in both directions.
 | Field | Means | Typical |
 |---|---|---|
 | `output.expiresAt` | When this signed download URL stops working | 1 hour |
-| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro |
+| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro and studio |
 
 So a URL going stale does not mean the output is gone: re-fetch the job for a
 fresh URL. And a file still being in retention does not mean an old URL works.
