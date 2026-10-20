@@ -125,12 +125,15 @@ right.**
     rather than small.
   - What a plan can render differs. Pay-as-you-go renders compose up to 1080p
     at 30 fps. Pro adds 1440p, and Studio adds 4K and 60 fps. Animated
-    graphics (kinetic text, 3D cards, HTML or Lottie motion) above 1080p or
-    30 fps need an enterprise plan. A video above the plan fails at submit with `PLAN_LIMIT`, and the
+    graphics (text split into letters, words or lines, a `blur` or `scale`
+    entrance, any text exit, and 3D turns) above 1080p or 30 fps need an
+    enterprise plan. Lottie animations are not animated graphics. A video above the plan fails at submit with `PLAN_LIMIT`, and the
     message names the plan that renders it. Tell the user, do not retry.
   - The `validate_compose` MCP tool (or `POST /compose/validate`) runs the
     same plan check for free and quotes the price as
     `{ perMinuteUsd, minSeconds }` before you render.
+  - Every compose feature is listed with its JSON field and a rendered preview
+    at https://rendobar.com/compose/features/, searchable by name.
 
   Current rates are on the [pricing page](https://rendobar.com/pricing/), and
   the charge for a specific job appears on the job once billing settles,
