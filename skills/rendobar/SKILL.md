@@ -123,13 +123,17 @@ right.**
     plan, at every frame size and with animated graphics, so a low resolution
     draft costs the same per second as a 1080p final. Keep test renders short
     rather than small.
-  - What a plan can render differs. Pay-as-you-go renders compose up to 1080p
-    at 30 fps. Pro adds 1440p, and Studio adds 4K and 60 fps. Animated
+  - What a plan can render differs. Free renders compose up to 1080p at
+    30 fps. Pro adds 1440p, and Studio adds 4K and 60 fps. Animated
     graphics (text split into letters, words or lines, a `blur` or `scale`
     entrance, any text exit, and 3D turns) above 1080p or 30 fps need an
-    enterprise plan. Lottie animations are not animated graphics. A video
-    above the plan fails at submit with `PLAN_LIMIT`, and the
-    message names the plan that renders it. Tell the user, do not retry.
+    enterprise plan. They work only on top-level tracks and in `overlays`,
+    never inside a scene or a composition. Lottie animations are not
+    animated graphics. A video above the plan fails at submit with
+    `PLAN_LIMIT`. Read `upgradeTo` on the problem in `error.details`:
+    `"pro"` or `"studio"` names the plan that renders it, and `null` means
+    only an enterprise plan does. Do not parse the message. Tell the user,
+    do not retry.
   - The `validate_compose` MCP tool (or `POST /compose/validate`) runs the
     same plan check for free and quotes the price as
     `{ perMinuteUsd, minSeconds }` before you render.
