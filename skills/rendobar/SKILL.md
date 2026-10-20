@@ -4,7 +4,7 @@ description: "Use this skill whenever a task involves media files or media gener
 license: MIT
 metadata:
   author: rendobar
-  version: "1.2.0"
+  version: "1.3.0"
   source: https://github.com/rendobar/agent-skills
   homepage: https://rendobar.com
 ---
@@ -114,11 +114,35 @@ right.**
 - `dryRun` on `compress.target` reads like a free estimate. It is not: it runs
   real probe encodes and bills close to the full job. Do not sprinkle it in to
   "check cost first".
-- Never smoke test with a long or high resolution source. Billing tracks the
-  compute a job actually uses, so a 2 hour 4K render costs real money and
-  proves nothing the 5 second sample does not. Current rates are on the
-  [pricing page](https://rendobar.com/pricing/), and the charge for a specific
-  job appears on the job once billing settles, shortly after it completes.
+- Never smoke test with a long or high resolution source. A 2 hour 4K render
+  costs real money and proves nothing the 5 second sample does not. How a job
+  bills depends on its type:
+  - Most types bill the compute the job actually uses.
+  - `compose` bills $0.04 per minute of the video it returns, counted by the
+    second, with a 15 second minimum per render. The rate is the same on every
+    plan, at every frame size and with animated graphics, so a low resolution
+    draft costs the same per second as a 1080p final. Keep test renders short
+    rather than small.
+  - What a plan can render differs. Free renders compose up to 1080p at
+    30 fps. Pro adds 1440p, and Studio adds 4K and 60 fps. Animated
+    graphics (text split into letters, words or lines, a `blur` or `scale`
+    entrance, any text exit, and 3D turns) above 1080p or 30 fps need an
+    enterprise plan. They work only on top-level tracks and in `overlays`,
+    never inside a scene or a composition. Lottie animations are not
+    animated graphics. A video above the plan fails at submit with
+    `PLAN_LIMIT`. Read `upgradeTo` on the problem in `error.details`:
+    `"pro"` or `"studio"` names the plan that renders it, and `null` means
+    only an enterprise plan does. Do not parse the message. Tell the user,
+    do not retry.
+  - The `validate_compose` MCP tool (or `POST /compose/validate`) runs the
+    same plan check for free and quotes the price as
+    `{ perMinuteUsd, minSeconds }` before you render.
+  - Every compose feature is listed with its JSON field and a rendered preview
+    at https://rendobar.com/compose/features/, searchable by name.
+
+  Current rates are on the [pricing page](https://rendobar.com/pricing/), and
+  the charge for a specific job appears on the job once billing settles,
+  shortly after it completes.
 - Check the balance before a large batch: `client.billing.state()`.
 
 ## Common mistakes
@@ -150,7 +174,7 @@ bugs in both directions.
 | Field | Means | Typical |
 |---|---|---|
 | `output.expiresAt` | When this signed download URL stops working | 1 hour |
-| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro |
+| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro, 90 on studio |
 
 So a URL going stale does not mean the output is gone: re-fetch the job for a
 fresh URL. And a file still being in retention does not mean an old URL works.

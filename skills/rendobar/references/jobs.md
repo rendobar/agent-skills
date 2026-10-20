@@ -103,8 +103,9 @@ A completed job carries `output` with four fields:
 
 `output.expiresAt` is the URL's life, not the file's. The file itself is
 deleted at `retentionExpiresAt` on the job, which is plan driven (7 days on
-free, 30 on pro). Re-fetch the job for a fresh URL rather than caching one, and
-copy anything that must outlive retention into your own storage.
+free, 30 on pro, 90 on studio). Re-fetch the job for a fresh URL rather than
+caching one, and copy anything that must outlive retention into your own
+storage.
 
 ## Response envelope
 

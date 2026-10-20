@@ -66,22 +66,24 @@ must handle.
 |---|---|---|
 | `VALIDATION_ERROR` | 400 | The request body or params failed schema validation. Fix the payload. Re-read the type's schema at `GET /jobs/types/{type}/schema`. Do not retry unchanged. |
 | `INVALID_JOB_TYPE` | 400 | The type does not exist. Re-read the live catalog at `GET /jobs/types`. Never guess type names. |
+| `FEATURE_NOT_ENABLED` | 400 | A compose job uses animated text or 3D turns, which are still rolling out and not enabled for this account. Tell the user. Offer to render without them, or point them to support for access. Do not retry unchanged. |
 | `UNAUTHORIZED` | 401 | Two distinct causes, check both before reporting: the key may not be reaching the process env, or the key itself may be invalid for this API (revoked, mistyped, or issued for another environment such as staging). Confirm which one rather than guessing. |
 | `INSUFFICIENT_CREDITS` | 402 | The org balance cannot cover the job. Tell the user to top up at https://app.rendobar.com/billing. Do not retry until they do. |
 | `FORBIDDEN` | 403 | The key's org cannot access this resource. |
-| `PLAN_LIMIT` | 403 | A plan limit was hit (file size, concurrency, and similar). Surface it to the user, do not silently retry. |
+| `PLAN_LIMIT` | 403 | A plan limit was hit (file size, job timeout, GPU FFmpeg on the free plan, a compose frame or frame rate above the plan, and similar). A compose or GPU refusal lists problems in `details`, each with `upgradeTo`: `"pro"` or `"studio"` for the cheapest plan that runs it, `null` when only an enterprise plan does. Read `upgradeTo`, not the message. Surface it to the user, do not silently retry. |
 | `NOT_FOUND` | 404 | The resource does not exist or belongs to another org. Check the id. |
 | `CONFLICT` | 409 | State conflict, for example cancelling a job that already finished. |
 | `RATE_LIMITED` | 429 | Too many requests. Retry with exponential backoff and jitter. |
 | `RUNNER_ERROR` | 502 | The processing backend failed. Safe to retry the job (use an `idempotencyKey`). |
-| `RUNNER_TIMEOUT` | 504 | The job exceeded its timeout. Retrying the same input usually times out again, so reconsider the input or params. |
+| `RUNNER_TIMEOUT` | 504 | A runner accepted the job but never started it, or lost the run. Not charged. A job that ran past its plan timeout fails with `JOB_TIMEOUT` instead, and retrying the same input usually times out again. |
 | `INTERNAL_ERROR` | 500 | Unexpected server error. Retry with backoff, then surface. |
 
 ## Rules of thumb
 
 - Retryable with backoff: `RATE_LIMITED`, `RUNNER_ERROR`, `INTERNAL_ERROR`.
 - Fix-then-retry: `VALIDATION_ERROR`, `INVALID_JOB_TYPE`, `UNAUTHORIZED`.
-- User action required: `INSUFFICIENT_CREDITS`, `PLAN_LIMIT`.
+- User action required: `INSUFFICIENT_CREDITS`, `PLAN_LIMIT`,
+  `FEATURE_NOT_ENABLED`.
 - For a failed job, do not apply these rules of thumb at all. Read
   `error.retryable` on the job, which is authoritative for that specific
   failure.
