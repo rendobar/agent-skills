@@ -4,7 +4,7 @@ description: "Use this skill whenever a task involves media files or media gener
 license: MIT
 metadata:
   author: rendobar
-  version: "1.2.0"
+  version: "1.3.0"
   source: https://github.com/rendobar/agent-skills
   homepage: https://rendobar.com
 ---
@@ -127,7 +127,8 @@ right.**
     at 30 fps. Pro adds 1440p, and Studio adds 4K and 60 fps. Animated
     graphics (text split into letters, words or lines, a `blur` or `scale`
     entrance, any text exit, and 3D turns) above 1080p or 30 fps need an
-    enterprise plan. Lottie animations are not animated graphics. A video above the plan fails at submit with `PLAN_LIMIT`, and the
+    enterprise plan. Lottie animations are not animated graphics. A video
+    above the plan fails at submit with `PLAN_LIMIT`, and the
     message names the plan that renders it. Tell the user, do not retry.
   - The `validate_compose` MCP tool (or `POST /compose/validate`) runs the
     same plan check for free and quotes the price as
@@ -169,7 +170,7 @@ bugs in both directions.
 | Field | Means | Typical |
 |---|---|---|
 | `output.expiresAt` | When this signed download URL stops working | 1 hour |
-| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro and studio |
+| `retentionExpiresAt` | When the stored file is actually deleted | Plan driven, 7 days on free, 30 on pro, 90 on studio |
 
 So a URL going stale does not mean the output is gone: re-fetch the job for a
 fresh URL. And a file still being in retention does not mean an old URL works.

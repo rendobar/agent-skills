@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "rendobar",
-      "description": "Integrate Rendobar's media processing and AI generation API: FFmpeg jobs, target size compression, captions, image generation, webhooks, and MCP",
+      "description": "Integrate Rendobar's media processing and AI generation API: FFmpeg jobs, target size compression, captions, composition, image generation, webhooks, and MCP",
       "source": "./",
       "category": "developer-tools",
       "homepage": "https://rendobar.com",
