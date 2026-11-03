@@ -1,10 +1,10 @@
 ---
 name: rendobar
-description: "Use this skill whenever a task involves media files or media generation: transcoding or converting video and audio, running FFmpeg commands, compressing to a target size or quality, probing media metadata, burning or animating captions and subtitles, composing video from a JSON timeline, or generating, editing, and upscaling images. Triggers include any mention of 'Rendobar', 'FFmpeg API', 'video processing API', 'compress this video', 'add captions to', 'generate an image', or 'render a video'. Use it even for simple one-off media tasks, because it carries the live job catalog, the cost and verification rules, and the API key handling that prevent silent failures and wasted spend. Rendobar (https://rendobar.com) is a media processing and AI generation API platform. Do NOT use it for local-only edits where no API call is wanted, or for screen recording and live stream capture, which Rendobar does not do."
+description: "Use this skill whenever a task involves media files or media generation: transcoding or converting video and audio, running FFmpeg commands, compressing to a target size or quality, probing media metadata, burning or animating captions and subtitles, composing video from a JSON timeline, generating, editing, and upscaling images, or making 3D models from a photo or a prompt, ready to print. Triggers include any mention of 'Rendobar', 'FFmpeg API', 'video processing API', 'compress this video', 'add captions to', 'generate an image', 'render a video', 'image to 3D', 'STL', or '3D print'. Use it even for simple one-off media tasks, because it carries the live job catalog, the cost and verification rules, and the API key handling that prevent silent failures and wasted spend. Rendobar (https://rendobar.com) is a media processing and AI generation API platform. Do NOT use it for local-only edits where no API call is wanted, or for screen recording and live stream capture, which Rendobar does not do."
 license: MIT
 metadata:
   author: rendobar
-  version: "1.3.0"
+  version: "1.4.0"
   source: https://github.com/rendobar/agent-skills
   homepage: https://rendobar.com
 ---
@@ -139,6 +139,15 @@ right.**
     `{ perMinuteUsd, minSeconds }` before you render.
   - Every compose feature is listed with its JSON field and a rendered preview
     at https://rendobar.com/compose/features/, searchable by name.
+- **3D jobs run for minutes on GPUs. Validate before you submit.**
+  `3d.generate` makes a model from one front photo or a text prompt.
+  `3d.prepare` repairs a mesh you already have and makes it print-ready, or
+  converts it. The `validate_3d` MCP tool (or `POST /3d/validate`) checks the
+  same params for free and returns each problem with a machine code. Fix
+  every problem it reports, then submit. Read the job's schema from
+  `list_job_types` for the printer, size and format fields. A generate job's
+  output ends with `reference.png`, the picture its shape was built from.
+  Show it to the user next to the model.
 
   Current rates are on the [pricing page](https://rendobar.com/pricing/), and
   the charge for a specific job appears on the job once billing settles,
