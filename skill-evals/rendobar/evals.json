@@ -73,6 +73,47 @@
         "Verifies which cause applies rather than guessing, for example by calling the API directly with the same key",
         "Never prints or echoes the key value while debugging"
       ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "Turn this photo of my dog figurine into something I can 3D print on my Bambu A1. https://example.com/dog.jpg",
+      "expected_behavior": [
+        "Uses 3d.generate with the photo as inputs.front and printer bambu-a1",
+        "Asks for the real size in mm, or states the default it will use, instead of inventing one",
+        "Checks the request with validate_3d or POST /3d/validate before submitting",
+        "Shows the user the resolved size, printer and formats and waits for a yes before submitting",
+        "Shows reference.png as a preview without claiming the model is printable from it",
+        "Says the sliced .gcode.3mf opens in the printer's slicer and that print time and filament are estimates"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "Make me a 3D model of a little robot.",
+      "expected_behavior": [
+        "Asks whether it is for printing or for an app before choosing a printer or formats",
+        "Writes a prompt that names one object with its shape, material and style, and no lighting, camera or background",
+        "Offers image.generate first so the user can approve the look, or enhancePrompt for a short prompt",
+        "Validates and gets a yes before submitting 3d.generate"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "I have a 400 mm tall statue STL and an Elegoo Saturn 4 Ultra. Make it printable.",
+      "expected_behavior": [
+        "Uses 3d.prepare with the STL as inputs.mesh, not 3d.generate",
+        "Explains the model is taller than the plate and that split cuts it into pinned parts, or that a smaller sizeMm fits in one piece",
+        "Offers hollow for a resin print of this size",
+        "Validates before submitting and reads any exceeds_plate problem by its code"
+      ]
+    },
+    {
+      "skills": ["rendobar"],
+      "query": "Generate a replacement shelf bracket I can print. The screw holes are 40 mm apart and it has to hold books.",
+      "expected_behavior": [
+        "Says a generated mesh is not dimensionally accurate enough for a part that must fit screws and carry load",
+        "Recommends CAD or a text-to-CAD tool instead of submitting 3d.generate",
+        "Does not submit a paid job before the user agrees to a decorative-only result"
+      ]
     }
   ]
 }

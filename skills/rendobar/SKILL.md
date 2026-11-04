@@ -139,15 +139,17 @@ right.**
     `{ perMinuteUsd, minSeconds }` before you render.
   - Every compose feature is listed with its JSON field and a rendered preview
     at https://rendobar.com/compose/features/, searchable by name.
-- **3D jobs run for minutes on GPUs. Validate before you submit.**
-  `3d.generate` makes a model from one front photo or a text prompt.
-  `3d.prepare` repairs a mesh you already have and makes it print-ready, or
-  converts it. The `validate_3d` MCP tool (or `POST /3d/validate`) checks the
-  same params for free and returns each problem with a machine code. Fix
-  every problem it reports, then submit. Read the job's schema from
-  `list_job_types` for the printer, size and format fields. A generate job's
-  output ends with `reference.png`, the picture its shape was built from.
-  Show it to the user next to the model.
+- **3D jobs run for minutes on GPUs. Settle the purpose, validate, then
+  confirm.** `3d.generate` makes a model from a photo (a front view, plus
+  back, left and right if you have them) or a text prompt. `3d.prepare`
+  repairs a mesh the user already has and makes it print-ready, or converts
+  it. First ask whether it is for printing (set `printer`) or for an app
+  (leave it out), and the real size. The `validate_3d` MCP tool (or
+  `POST /3d/validate`) checks the request for free. Fix every problem it
+  returns, show the user the resolved settings and get a yes before
+  submitting. Over MCP, `list_job_types` with the type returns the full
+  workflow guide. The rules for good input photos, prompts and the handover
+  are in [references/jobs.md](references/jobs.md#3d-models).
 
   Current rates are on the [pricing page](https://rendobar.com/pricing/), and
   the charge for a specific job appears on the job once billing settles,
